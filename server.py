@@ -16,7 +16,8 @@ import requests
 app = Flask(__name__)
 
 # Required to use Flask sessions and the debug toolbar
-app.secret_key = os.environ['AccuWeather_Key']
+app.AccuWather_API_Key = os.environ['AccuWeather_Key']
+app.Spotify_API_Key=os.environ['Spotify_API_Key']
 
 # Normally, if you use an undefined variable in Jinja2, it fails
 # silently. This is horrible. Fix this so that, instead, it raises an
@@ -37,20 +38,40 @@ def lookup_location_key():
     zipcode = request.args.get("zipcode")
     print zipcode
     print "---------"
-    payload = {'apikey': app.secret_key,
-                'q': zipcode, 'language': 'en-us'}
+    payload = {'apikey': app.AccuWather_API_Key, 'q': zipcode, 'language': 'en-us'}
 
-    weather = requests.get('http://dataservice.accuweather.com/locations/v1/postalcodes/search',
+    location = requests.get('http://dataservice.accuweather.com/locations/v1/postalcodes/search',
+                            params=payload)
+
+    location_list = location.json()
+
+    zipcode_key = location_list[0]['Key']
+
+    weather_condition = lookup_weather_condition(zipcode_key)
+
+    # print zipcode_key
+    # print weather_condition
+    return render_template("show-playlists.html", weather_condition=weather_condition)
+
+def lookup_weather_condition(zipcode_key):
+    """Look up weather condition by location key"""
+
+    payload = {'apikey': app.AccuWather_API_Key}
+
+    weather = requests.get('http://dataservice.accuweather.com/currentconditions/v1/%s' % zipcode_key,
                             params=payload)
 
     weather_list = weather.json()
 
-    zipcode_key = weather_list[0]['Key']
+    weather_text = weather_list[0]['WeatherText']
 
-    # print zipcode_key
-    # return zipcode_key
+    return weather_text
 
+app.route('/show-playlists')
+def show_playlists():
+    """Look up playlists related to weather condition"""
 
+    payload = {'apikey': app.Spotify_API_Key, 'q': weather_condition, 'type': 'playlist'}
 
 
 
