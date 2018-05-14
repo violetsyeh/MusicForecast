@@ -32,39 +32,39 @@ def index():
 def lookup_location_key():
     """Look up location key by zipcode"""
 
-    zipcode = request.args.get("zipcode")
-    # print zipcode
-    # print "---------"
-    payload = {'apikey': app.AccuWather_API_Key, 'q': zipcode, 'language': 'en-us'}
-
-    location = requests.get('http://dataservice.accuweather.com/locations/v1/postalcodes/search',
-                            params=payload)
-
-    location_list = location.json()
-
-    zipcode_key = location_list[0]['Key']
-
-
-    weather_condition = lookup_weather_condition(zipcode_key)
-    # weather_condition = 'sunny'
+    # zipcode = request.args.get("zipcode")
+    # # print zipcode
+    # # print "---------"
+    # payload = {'apikey': app.AccuWather_API_Key, 'q': zipcode, 'language': 'en-us'}
+    #
+    # location = requests.get('http://dataservice.accuweather.com/locations/v1/postalcodes/search',
+    #                         params=payload)
+    #
+    # location_list = location.json()
+    #
+    # zipcode_key = location_list[0]['Key']
+    #
+    #
+    # weather_condition = lookup_weather_condition(zipcode_key)
+    weather_condition = 'sunny'
     # print zipcode_key
     # print weather_condition
     # return render_template("show-playlists.html", weather_condition=weather_condition)
     return show_playlists(weather_condition)
 
-def lookup_weather_condition(zipcode_key):
-    """Look up weather condition by location key"""
-
-    payload = {'apikey': app.AccuWather_API_Key}
-
-    weather = requests.get('http://dataservice.accuweather.com/currentconditions/v1/%s' % zipcode_key,
-                            params=payload)
-
-    weather_list = weather.json()
-
-    weather_text = weather_list[0]['WeatherText']
-
-    return weather_text
+# def lookup_weather_condition(zipcode_key):
+#     """Look up weather condition by location key"""
+#
+#     payload = {'apikey': app.AccuWather_API_Key}
+#
+#     weather = requests.get('http://dataservice.accuweather.com/currentconditions/v1/%s' % zipcode_key,
+#                             params=payload)
+#
+#     weather_list = weather.json()
+#
+#     weather_text = weather_list[0]['WeatherText']
+#
+#     return weather_text
 
 def show_playlists(weather_condition):
     """Look up playlists related to weather condition"""
