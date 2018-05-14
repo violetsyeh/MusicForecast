@@ -1,9 +1,9 @@
-import os
+
 
 var request = require('request'); // "Request" library
 
-var client_id = os.environ['Spotify_Client_Id']; // Your client id
-var client_secret = os.environ['Spotify_Client_Secret']; // Your secret
+var client_id = process.env.Spotify_Client_Id; // Your client id
+var client_secret = process.env.Spotify_Client_Secret; // Your secret
 
 // your application requests authorization
 var authOptions = {
@@ -30,8 +30,6 @@ request.post(authOptions, function(error, response, body) {
       json: true
     };
     request.get(options, function(error, response, body) {
-      // console.log(body)
-      // console.log(body["playlists"]["items"])
       console.log(body["playlists"]["items"][0]["uri"])
     });
   }
