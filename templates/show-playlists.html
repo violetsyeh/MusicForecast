@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
-{{playlists}}
-<iframe src="https://open.spotify.com/embed?uri=spotify:user:spotify:playlist:37i9dQZF1DWVlm7xgnWdvJ"
+{% for playlist in playlists %}
+<iframe src="https://open.spotify.com/embed?uri={{playlist}}"
 width="300" height="380" frameborder="0" allowtransparency="true"></iframe>
+{% endfor %}
 {% endblock %}
