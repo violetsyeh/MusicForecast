@@ -32,11 +32,11 @@ class FlaskRouteTests(unittest.TestCase):
 
     def test_incorrect_zipcode(self):
 
-        result = self.client.get('/weather-lookup', query_string={'zipcode':'jam'}, follow_redirects=True)
+        result = self.client.get('/weather-playlist-lookup', query_string={'zipcode':'jam'}, follow_redirects=True)
         self.assertIn('Please enter a valid zipcode.',result.data)
 
     def test_zipcode_to_key(self):
-        result = self.client.get('/weather-lookup', query_string={'zipcode':'94030'}, follow_redirects=True)
+        result = self.client.get('/weather-playlist-lookup', query_string={'zipcode':'94030'}, follow_redirects=True)
         self.assertIsNot('Please enter a valid zipcode.', result.data)
         self.assertIn('playlists for today:', result.data)
 

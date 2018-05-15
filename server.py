@@ -28,7 +28,7 @@ def index():
 
     return render_template("homepage.html")
 
-@app.route('/weather-lookup', methods=['GET'])
+@app.route('/weather-playlist-lookup', methods=['GET'])
 def lookup_location_key():
     """Look up location key by zipcode"""
 
@@ -80,13 +80,17 @@ def show_playlists(weather_condition):
 
     results = spotify.search(q=weather_condition, type='playlist', market='US', limit=6, offset=0)
 
-    playlists = []
-    i = 0
+    if results:
+        playlists = []
+        i = 0
 
-    for i in range(0,6):
-        playlists.append(results['playlists']['items'][i]['uri'])
-        i += 1
-    return render_template("show-playlists.html", playlists=playlists, weather_condition=weather_condition)
+        for i in range(0,6):
+            playlists.append(results['playlists']['items'][i]['uri'])
+            i += 1
+        return render_template("show-playlists.html", playlists=playlists, weather_condition=weather_condition)
+    else:
+        flash('Sorry we were not able to find any playlists based on the forecast.')
+        return redirect('/')
 
 
 
