@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+<h1>Your {{weather_condition}} playlists for today: </h1>
 {% for playlist in playlists %}
 <iframe src="https://open.spotify.com/embed?uri={{playlist}}"
 width="300" height="380" frameborder="0" allowtransparency="true"></iframe>

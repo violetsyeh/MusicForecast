@@ -24,16 +24,21 @@ class FlaskRouteTests(unittest.TestCase):
 
     def setUp(self):
 
-        self.client = server.app.test_client
+        self.client = server.app.test_client()
         app.config['TESTING'] = True
         app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
-        Spotify_Client_Id = os.environ['Spotify_Client_Id']
-        Spotify_Client_Secret = os.environ['Spotify_Client_Secret']
+        # Spotify_Client_Id = os.environ['Spotify_Client_Id']
+        # Spotify_Client_Secret = os.environ['Spotify_Client_Secret']
 
+    def test_incorrect_zipcode(self):
+
+        result = self.client.get('/weather-lookup', query_string={'zipcode':'jam'}, follow_redirects=True)
+        self.assertIn('Please enter a valid zipcode.',result.data)
 
     def test_zipcode_to_key(self):
-
-        result = self.client.get('/weather-lookup')
+        result = self.client.get('/weather-lookup', query_string={'zipcode':'94030'}, follow_redirects=True)
+        self.assertIsNot('Please enter a valid zipcode.', result.data)
+        self.assertIn('playlists for today:', result.data)
 
 
 

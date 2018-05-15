@@ -33,20 +33,14 @@ def lookup_location_key():
     """Look up location key by zipcode"""
 
     zipcode = request.args.get("zipcode")
-    # print zipcode
-    # print "---------"
+
     payload = {'apikey': app.AccuWather_API_Key, 'q': zipcode, 'language': 'en-us'}
 
     location = requests.get('http://dataservice.accuweather.com/locations/v1/postalcodes/search',
                             params=payload)
-    print location
-    print '------------------location'
+
     location_list = location.json()
-    print location_list
-    print 'locationlist___________________________________'
-    # zipcode_key = location_list[0]['Key']
-    # print zipcode_key
-    # print 'zipcode--------------------------'
+
     if location_list == []:
         flash("Please enter a valid zipcode.")
         return redirect('/')
@@ -79,11 +73,12 @@ def show_playlists(weather_condition):
 
     credentials = oauth2.SpotifyClientCredentials(client_id=app.Spotify_Client_Id,
                                                 client_secret=app.Spotify_Client_Secret)
-    print weather_condition
+
     token = credentials.get_access_token()
 
     spotify = spotipy.Spotify(auth=token)
-    results = spotify.search(q=weather_condition, type='playlist', market='US', limit=6,offset=0)
+
+    results = spotify.search(q=weather_condition, type='playlist', market='US', limit=6, offset=0)
 
     playlists = []
     i = 0
@@ -91,8 +86,7 @@ def show_playlists(weather_condition):
     for i in range(0,6):
         playlists.append(results['playlists']['items'][i]['uri'])
         i += 1
-    print playlists
-    return render_template("show-playlists.html", playlists=playlists)
+    return render_template("show-playlists.html", playlists=playlists, weather_condition=weather_condition)
 
 
 
