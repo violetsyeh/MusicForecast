@@ -42,17 +42,23 @@ class FlaskRouteTests(TestCase):
         self.assertIn('playlists for today:', result.data)
         # self.assertEqual(zipcode_key == '39346_PC')
 
-class HelperFunctionTests(TestCase):
-
-    def setUp(self):
-
-        # self.client = app.test_client()
-        app.config['TESTING'] = True
-
-    # def test_authenticate_spotify(self):
-    #
-    #     results = server.authenticate_spotify()
-    #     self.assertEqual(results == )
+# class HelperFunctionTests(TestCase):
+#
+#     def setUp(self):
+#
+#         # self.client = app.test_client()
+#         app.config['TESTING'] = True
+#
+#     # def test_authenticate_spotify(self):
+#     #
+#     #     results = server.authenticate_spotify()
+#     #     self.assertEqual(results == )
+#
+#     def test_lookup_weather_condition(self):
+#
+#         result = server.lookup_weather_condition('39346_PC')
+#         print result
+#         # self.assertEqual(result.weather == Response [200])
 
 
 

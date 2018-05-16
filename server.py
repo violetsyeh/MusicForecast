@@ -29,7 +29,7 @@ def index():
     return render_template("homepage.html")
 
 @app.route('/weather-playlist-lookup', methods=['GET'])
-def lookup_location_key():
+def display_playlists():
     """Look up location key by zipcode"""
 
     zipcode = request.args.get("zipcode")
@@ -53,22 +53,50 @@ def lookup_location_key():
 def lookup_playlists(weather_condition):
     """Look up playlists related to weather condition"""
 
+    limit = 8
     spotify = authenticate_spotify()
-    results = spotify.search(q=weather_condition, type='playlist', market='US', limit=6, offset=0)
+    results = spotify.search(q=weather_condition, type='playlist', market='US', limit=limit, offset=0)
 
     if results:
         playlists = []
         i = 0
 
-        for i in range(0,6):
+        for i in range(limit):
             playlists.append(results['playlists']['items'][i]['uri'])
         return render_template("show-playlists.html", playlists=playlists, weather_condition=weather_condition)
     else:
         flash('Sorry we were not able to find any playlists based on the forecast.')
         return redirect('/')
 
+@app.route('/sunny-playlists', methods=['GET'])
+def display_sunny_playlists():
+    """Display sunny playlists without weather lookup"""
+
+    weather_condition = 'sunny'
+    return lookup_playlists(weather_condition)
+
+@app.route('/cloudy-playlists', methods=['GET'])
+def display_cloudy_playlists():
+    """Display cloudy playlists without weather lookup"""
+
+    weather_condition = 'cloudy'
+    return lookup_playlists(weather_condition)
+
+
 ##################################################################################################
 """Helper functions"""
+def lookup_zipcode_key():
+
+    zipcode = request.args.get("zipcode")
+
+    payload = {'apikey': app.AccuWather_API_Key, 'q': zipcode, 'language': 'en-us'}
+
+    location = requests.get('http://dataservice.accuweather.com/locations/v1/postalcodes/search',
+                            params=payload)
+
+    location_list = location.json()
+
+    return location_list
 
 def lookup_weather_condition(zipcode_key):
     """Look up weather condition by location key"""
@@ -93,11 +121,6 @@ def authenticate_spotify():
 
     spotify = spotipy.Spotify(auth=token)
     return spotify
-
-
-
-
-
 
 
 
