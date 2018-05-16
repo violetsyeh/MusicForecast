@@ -44,15 +44,31 @@ def lookup_location_key():
     if location_list == []:
         flash("Please enter a valid zipcode.")
         return redirect('/')
-    # weather_condition = 'sunny'
-    # print zipcode_key
-    # print weather_condition
 
     else:
         zipcode_key = location_list[0]['Key']
         weather_condition = lookup_weather_condition(zipcode_key)
-        return show_playlists(weather_condition)
+        return lookup_playlists(weather_condition)
 
+def lookup_playlists(weather_condition):
+    """Look up playlists related to weather condition"""
+
+    spotify = authenticate_spotify()
+    results = spotify.search(q=weather_condition, type='playlist', market='US', limit=6, offset=0)
+
+    if results:
+        playlists = []
+        i = 0
+
+        for i in range(0,6):
+            playlists.append(results['playlists']['items'][i]['uri'])
+        return render_template("show-playlists.html", playlists=playlists, weather_condition=weather_condition)
+    else:
+        flash('Sorry we were not able to find any playlists based on the forecast.')
+        return redirect('/')
+
+##################################################################################################
+"""Helper functions"""
 
 def lookup_weather_condition(zipcode_key):
     """Look up weather condition by location key"""
@@ -68,34 +84,15 @@ def lookup_weather_condition(zipcode_key):
 
     return weather_text
 
-def show_playlists(weather_condition):
-    """Look up playlists related to weather condition"""
+def authenticate_spotify():
+    """Authenticate spotify with credentials for token"""
 
     credentials = oauth2.SpotifyClientCredentials(client_id=app.Spotify_Client_Id,
                                                 client_secret=app.Spotify_Client_Secret)
-
     token = credentials.get_access_token()
 
     spotify = spotipy.Spotify(auth=token)
-
-    results = spotify.search(q=weather_condition, type='playlist', market='US', limit=6, offset=0)
-
-    if results:
-        playlists = []
-        i = 0
-
-        for i in range(0,6):
-            playlists.append(results['playlists']['items'][i]['uri'])
-            i += 1
-        return render_template("show-playlists.html", playlists=playlists, weather_condition=weather_condition)
-    else:
-        flash('Sorry we were not able to find any playlists based on the forecast.')
-        return redirect('/')
-
-
-
-
-
+    return spotify
 
 
 

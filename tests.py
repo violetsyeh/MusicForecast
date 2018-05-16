@@ -5,10 +5,11 @@ from unittest import TestCase
 import os
 from flask import Flask
 from model import db, connect_to_db
+import json
 
 app.AccuWather_API_Key = os.environ['AccuWeather_Key']
 
-class FlaskTests(unittest.TestCase):
+class FlaskTests(TestCase):
 
     def setUp(self):
 
@@ -20,7 +21,7 @@ class FlaskTests(unittest.TestCase):
         result = self.client.get('/')
         self.assertIn('<h2>Enter your zipcode here:</h2>', result.data)
 
-class FlaskRouteTests(unittest.TestCase):
+class FlaskRouteTests(TestCase):
 
     def setUp(self):
 
@@ -39,11 +40,19 @@ class FlaskRouteTests(unittest.TestCase):
         result = self.client.get('/weather-playlist-lookup', query_string={'zipcode':'94030'}, follow_redirects=True)
         self.assertIsNot('Please enter a valid zipcode.', result.data)
         self.assertIn('playlists for today:', result.data)
+        # self.assertEqual(zipcode_key == '39346_PC')
 
+class HelperFunctionTests(TestCase):
 
+    def setUp(self):
 
+        # self.client = app.test_client()
+        app.config['TESTING'] = True
 
-
+    # def test_authenticate_spotify(self):
+    #
+    #     results = server.authenticate_spotify()
+    #     self.assertEqual(results == )
 
 
 
