@@ -82,6 +82,12 @@ def display_cloudy_playlists():
     weather_condition = 'cloudy'
     return lookup_playlists(weather_condition)
 
+@app.route('/rainy-playlists', methods=['GET'])
+def display_rainy_playlists():
+    """Display cloudy playlists without weather lookup"""
+
+    weather_condition = 'rainy'
+    return lookup_playlists(weather_condition)
 
 ##################################################################################################
 """Helper functions"""
