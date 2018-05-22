@@ -15,18 +15,51 @@ app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 app.AccuWather_API_Key = os.environ['AccuWeather_Key']
 app.Spotify_Client_Id = os.environ['Spotify_Client_Id']
 app.Spotify_Client_Secret = os.environ['Spotify_Client_Secret']
+Redirect_Uri = 'http://localhost:localhost:5000/'
+SCOPE = 'playlist-modify playlist-modify-private'
+CACHE = '.spotipyoauthcache'
+authorization_url = 'https://accounts.spotify.com/authorize?'
 
 # Normally, if you use an undefined variable in Jinja2, it fails
 # silently. This is horrible. Fix this so that, instead, it raises an
 # error.
 app.jinja_env.undefined = StrictUndefined
-
+sp_oauth = oauth2.SpotifyOAuth(app.Spotify_Client_Id, app.Spotify_Client_Secret,
+                            Redirect_Uri,scope=SCOPE, cache_path=CACHE)
 
 @app.route('/')
 def index():
     """Homepage."""
+    access_token = ""
+    sp_oauth = oauth2.SpotifyOAuth(app.Spotify_Client_Id, app.Spotify_Client_Secret,
+                                Redirect_Uri,scope=SCOPE, cache_path=CACHE)
 
-    return render_template("homepage.html")
+    cached_token = sp_oauth.get_cached_token()
+
+    if cached_token:
+        print "cached_token found"
+        access_token = cached_token['access_token']
+        return redirect('/')
+    else:
+        url = request.url
+        code = sp_oauth.parse_response_code(url)
+        if code:
+            print "found spotify auth code in request url"
+            cached_token = sp_oauth.get_access_token(code)
+            access_token = cached_token['access_token']
+
+    if access_token:
+        print "access token exists"
+        sp = spotipy.Spotify(access_token)
+        results = sp.current_user()
+        return results
+    else:
+        auth_url = getauthURI()
+        return render_template("homepage.html", auth_url=auth_url)
+
+def getauthURI():
+    auth_url = sp_oauth.get_authorize_url()
+    return auth_url
 
 @app.route('/weather-playlist-lookup', methods=['GET'])
 def display_playlists():
@@ -67,6 +100,11 @@ def lookup_playlists(weather_condition):
     else:
         flash('Sorry we were not able to find any playlists based on the forecast.')
         return redirect('/')
+
+
+
+
+
 
 @app.route('/sunny-playlists', methods=['GET'])
 def display_sunny_playlists():
