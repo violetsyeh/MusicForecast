@@ -7,6 +7,7 @@ import os
 import spotipy
 import requests
 import spotipy.oauth2 as oauth2
+import spotipy.util as util
 
 app = Flask(__name__)
 
@@ -15,10 +16,11 @@ app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 app.AccuWather_API_Key = os.environ['AccuWeather_Key']
 app.Spotify_Client_Id = os.environ['Spotify_Client_Id']
 app.Spotify_Client_Secret = os.environ['Spotify_Client_Secret']
-Redirect_Uri = 'http://localhost:localhost:5000/'
+Redirect_Uri = 'http://0.0.0.0:5000/login'
 SCOPE = 'playlist-modify playlist-modify-private'
 CACHE = '.spotipyoauthcache'
 authorization_url = 'https://accounts.spotify.com/authorize?'
+token_url = 'https://accounts.spotify.com/api/token'
 
 # Normally, if you use an undefined variable in Jinja2, it fails
 # silently. This is horrible. Fix this so that, instead, it raises an
@@ -26,23 +28,30 @@ authorization_url = 'https://accounts.spotify.com/authorize?'
 app.jinja_env.undefined = StrictUndefined
 sp_oauth = oauth2.SpotifyOAuth(app.Spotify_Client_Id, app.Spotify_Client_Secret,
                             Redirect_Uri,scope=SCOPE, cache_path=CACHE)
-
+sp = spotipy.Spotify()
 @app.route('/')
 def index():
     """Homepage."""
     access_token = ""
-    sp_oauth = oauth2.SpotifyOAuth(app.Spotify_Client_Id, app.Spotify_Client_Secret,
-                                Redirect_Uri,scope=SCOPE, cache_path=CACHE)
+    sp_oauth = oauth2.SpotifyOAuth(client_id=app.Spotify_Client_Id, client_secret=app.Spotify_Client_Secret,
+                                redirect_uri=Redirect_Uri,scope=SCOPE, cache_path=CACHE)
 
     cached_token = sp_oauth.get_cached_token()
+    auth_url = sp_oauth.get_authorize_url()
 
     if cached_token:
         print "cached_token found"
+        print '========='
         access_token = cached_token['access_token']
-        return redirect('/')
+        sp = spotipy.Spotify(auth=access_token)
+        user = sp.current_user()
+        return render_template('profile.html', auth_url=auth_url, user=user)
     else:
         url = request.url
         code = sp_oauth.parse_response_code(url)
+        print code
+        print '====================code'
+
         if code:
             print "found spotify auth code in request url"
             cached_token = sp_oauth.get_access_token(code)
@@ -54,12 +63,52 @@ def index():
         results = sp.current_user()
         return results
     else:
-        auth_url = getauthURI()
+        auth_url = sp_oauth.get_authorize_url()
+        print auth_url
+        print '========'
         return render_template("homepage.html", auth_url=auth_url)
 
-def getauthURI():
+# def getauthURI():
+#     auth_url = sp_oauth.get_authorize_url()
+#     return auth_url
+    # token_info = sp_oauth.get_cached_token()
+    # if not token_info:
+    #     auth_url = sp_oauth.get_authorize_url()
+    #     print(auth_url)
+    #     response = input('Paste the above link into your browser, then paste the redirect url here: ')
+    #
+    # code = sp_oauth.parse_response_code(response)
+    # token_info = sp_oauth.get_access_token(code)
+    #
+    # token = token_info['access_token']
+    #
+    # sp = spotipy.Spotify(auth=token)
+
+@app.route('/login')
+def login():
+    access_token = ""
+    sp_oauth = oauth2.SpotifyOAuth(client_id=app.Spotify_Client_Id, client_secret=app.Spotify_Client_Secret,
+                                redirect_uri=Redirect_Uri,scope=SCOPE, cache_path=CACHE)
+
+    cached_token = sp_oauth.get_cached_token()
     auth_url = sp_oauth.get_authorize_url()
-    return auth_url
+
+    url = request.url
+    code = sp_oauth.parse_response_code(url)
+    print code
+    print '===================='
+
+    if code:
+        print "found spotify auth code in request url"
+        cached_token = sp_oauth.get_access_token(code)
+        access_token = cached_token['access_token']
+
+    if access_token:
+        print "access token exists"
+        sp = spotipy.Spotify(access_token)
+        user = sp.current_user()
+        return render_template("profile.html", auth_url=auth_url,user=user)
+
 
 @app.route('/weather-playlist-lookup', methods=['GET'])
 def display_playlists():
