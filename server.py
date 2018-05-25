@@ -3,49 +3,43 @@ from flask_debugtoolbar import DebugToolbarExtension
 from flask import (Flask, render_template, redirect, request, flash,
                    session, jsonify)
 from model import User, Playlist, connect_to_db, db
-import os
 import spotipy
+import os
 import requests
 import spotipy.oauth2 as oauth2
 import spotipy.util as util
+from config import AccuWather_API_Key, Spotify_Client_Id, Spotify_Client_Secret, Redirect_Uri, SCOPE, CACHE
 
 app = Flask(__name__)
 
 # Required to use Flask sessions and the debug toolbar
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
-app.AccuWather_API_Key = os.environ['AccuWeather_Key']
-app.Spotify_Client_Id = os.environ['Spotify_Client_Id']
-app.Spotify_Client_Secret = os.environ['Spotify_Client_Secret']
-Redirect_Uri = 'http://0.0.0.0:5000/login'
-SCOPE = 'playlist-modify playlist-modify-private'
-CACHE = '.spotipyoauthcache'
-authorization_url = 'https://accounts.spotify.com/authorize?'
-token_url = 'https://accounts.spotify.com/api/token'
+
 
 # Normally, if you use an undefined variable in Jinja2, it fails
 # silently. This is horrible. Fix this so that, instead, it raises an
 # error.
 app.jinja_env.undefined = StrictUndefined
-sp_oauth = oauth2.SpotifyOAuth(app.Spotify_Client_Id, app.Spotify_Client_Secret,
+sp_oauth = oauth2.SpotifyOAuth(Spotify_Client_Id, Spotify_Client_Secret,
                             Redirect_Uri,scope=SCOPE, cache_path=CACHE)
-sp = spotipy.Spotify()
+
 @app.route('/')
 def index():
     """Homepage."""
     access_token = ""
-    sp_oauth = oauth2.SpotifyOAuth(client_id=app.Spotify_Client_Id, client_secret=app.Spotify_Client_Secret,
+    sp_oauth = oauth2.SpotifyOAuth(client_id=Spotify_Client_Id, client_secret=Spotify_Client_Secret,
                                 redirect_uri=Redirect_Uri,scope=SCOPE, cache_path=CACHE)
 
-    cached_token = sp_oauth.get_cached_token()
+    token_info = sp_oauth.get_cached_token()
     auth_url = sp_oauth.get_authorize_url()
 
-    if cached_token:
+    if token_info:
         print "cached_token found"
         print '========='
-        access_token = cached_token['access_token']
+        access_token = token_info['access_token']
         sp = spotipy.Spotify(auth=access_token)
         user = sp.current_user()
-        return render_template('profile.html', auth_url=auth_url, user=user)
+        return render_template('homepage.html', user=user)
     else:
         url = request.url
         code = sp_oauth.parse_response_code(url)
@@ -54,8 +48,8 @@ def index():
 
         if code:
             print "found spotify auth code in request url"
-            cached_token = sp_oauth.get_access_token(code)
-            access_token = cached_token['access_token']
+            token_info = sp_oauth.get_access_token(code)
+            access_token = token_info['access_token']
 
     if access_token:
         print "access token exists"
@@ -90,7 +84,7 @@ def login():
     sp_oauth = oauth2.SpotifyOAuth(client_id=app.Spotify_Client_Id, client_secret=app.Spotify_Client_Secret,
                                 redirect_uri=Redirect_Uri,scope=SCOPE, cache_path=CACHE)
 
-    cached_token = sp_oauth.get_cached_token()
+    token_info = sp_oauth.get_cached_token()
     auth_url = sp_oauth.get_authorize_url()
 
     url = request.url
@@ -100,7 +94,7 @@ def login():
 
     if code:
         print "found spotify auth code in request url"
-        cached_token = sp_oauth.get_access_token(code)
+        token_info = sp_oauth.get_access_token(code)
         access_token = cached_token['access_token']
 
     if access_token:
