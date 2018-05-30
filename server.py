@@ -41,7 +41,7 @@ def index():
         return render_template('homepage.html', user=user, auth_url=auth_url)
 
     elif sp_oauth.is_token_expired(token_info):
-        refresh()
+        refresh_access_token()
 
     else:
         url = request.url
@@ -56,19 +56,6 @@ def index():
 
     if access_token:
         return redirect('/login')
-    #     # print "access token exists"
-    #     sp = spotipy.Spotify(access_token)
-    #     # results = sp.current_user()
-    #     results = sp.featured_playlists(locale=None, country=None, timestamp=None, limit=5, offset=0)
-    #     if results:
-    #         playlists = []
-    #         i = 0
-    #
-    #         for i in range(limit):
-    #             playlists.append(results['playlists']['items'][i]['uri'])
-    #     return render_template('show-featured-playlists.html', auth_url=auth_url, playlists=playlists)
-    # else:
-    #     return render_template("homepage.html", auth_url=auth_url)
 
 
 @app.route('/login')
@@ -79,6 +66,7 @@ def login():
 
     url = request.url
     code = sp_oauth.parse_response_code(url)
+
     # print code
     # print '===================='
 
@@ -92,7 +80,8 @@ def login():
         # sp = spotipy.Spotify(access_token)
         # user = sp.current_user()
         # user_id = user['id']
-        add_user_to_session()
+        sp = spotipy.Spotify(access_token)
+        add_user_to_session(access_token)
         limit = 8
         results = sp.featured_playlists(locale=None, country=None, timestamp=None, limit=limit, offset=0)
         if results:
@@ -207,7 +196,7 @@ def lookup_weather_condition(zipcode_key):
     return weather_text
 
 def authenticate_spotify():
-    """Authenticate spotify with credentials for token"""
+    """Authenticate spotify with credentials for token without login"""
 
     credentials = oauth2.SpotifyClientCredentials(client_id=app.Spotify_Client_Id,
                                                 client_secret=app.Spotify_Client_Secret)
@@ -216,7 +205,7 @@ def authenticate_spotify():
     spotify = spotipy.Spotify(auth=token)
     return spotify
 
-def refresh():
+def refresh_access_token():
     # global token_info, sp
 
     # if sp_oauth.is_token_expired(token_info):
@@ -224,7 +213,7 @@ def refresh():
         token = token_info['access_token']
         sp = spotipy.Spotify(auth=token)
 
-def add_user_to_session():
+def add_user_to_session(access_token):
     sp = spotipy.Spotify(access_token)
     user = sp.current_user()
     user_id = user['id']
