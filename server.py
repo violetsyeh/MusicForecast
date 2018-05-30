@@ -28,33 +28,36 @@ auth_url = sp_oauth.get_authorize_url()
 def index():
     """Homepage."""
 
-    access_token = ""
-
+    # access_token = ""
     token_info = sp_oauth.get_cached_token()
-
+    #
+    # if token_info:
+    #     # print "cached_token found"
+    #     # print '========='
+    #     access_token = token_info['access_token']
+    #
+    #     # if credentials.is_token_expired(token_info):
+    #     #     refresh_access_token()
+    # # else:
+    #     sp = spotipy.Spotify(auth=access_token)
+    #     user = sp.current_user()
+    #     return render_template('homepage.html', user=user, auth_url=auth_url)
+    #
+    # else:
+    #     url = request.url
+    #     code = sp_oauth.parse_response_code(url)
+    #     # print code
+    #     # print '====================code'
+    #
+    #     if code:
+    #         # print "found spotify auth code in request url"
+    #         token_info = sp_oauth.get_access_token(code)
+    #         access_token = token_info['access_token']
     if token_info:
-        # print "cached_token found"
-        # print '========='
-        access_token = token_info['access_token']
-        sp = spotipy.Spotify(auth=access_token)
-        user = sp.current_user()
-        return render_template('homepage.html', user=user, auth_url=auth_url)
-
-    elif sp_oauth.is_token_expired(token_info):
-        refresh_access_token()
-
+        get_sp_access_token()
+        return render_template("homepage.html", auth_url=auth_url)
+    # if access_token:
     else:
-        url = request.url
-        code = sp_oauth.parse_response_code(url)
-        # print code
-        # print '====================code'
-
-        if code:
-            # print "found spotify auth code in request url"
-            token_info = sp_oauth.get_access_token(code)
-            access_token = token_info['access_token']
-
-    if access_token:
         return redirect('/login')
 
 
@@ -82,22 +85,14 @@ def login():
         # user_id = user['id']
         sp = spotipy.Spotify(access_token)
         add_user_to_session(access_token)
-        limit = 8
-        results = sp.featured_playlists(locale=None, country=None, timestamp=None, limit=limit, offset=0)
-        if results:
-            playlists = []
-            i = 0
-
-            for i in range(limit):
-                playlists.append(results['playlists']['items'][i]['uri'])
-
-        return render_template("show-featured-playlists.html", auth_url=auth_url, playlists=playlists)
+        return redirect('/show-featured-playlists')
 
 @app.route('/logout')
 def logout():
     session.clear()
+    flash('You have sucessfully logged out.')
+    return render_template("homepage.html", auth_url=auth_url)
 
-    return render_template("homepage.html",auth_url=auth_url)
 
 
 @app.route('/weather-playlist-lookup', methods=['GET'])
@@ -106,7 +101,7 @@ def display_playlists():
 
     zipcode = request.args.get("zipcode")
 
-    payload = {'apikey': app.AccuWather_API_Key, 'q': zipcode, 'language': 'en-us'}
+    payload = {'apikey': AccuWather_API_Key, 'q': zipcode, 'language': 'en-us'}
 
     location = requests.get('http://dataservice.accuweather.com/locations/v1/postalcodes/search',
                             params=payload)
@@ -119,7 +114,7 @@ def display_playlists():
 
     else:
         zipcode_key = location_list[0]['Key']
-        weather_condition = lookup_weather_condition(zipcode_key)
+        weather_condition = lookup_weather_condition(zipcode_key).lower()
         return lookup_playlists(weather_condition)
 
 def lookup_playlists(weather_condition):
@@ -139,9 +134,6 @@ def lookup_playlists(weather_condition):
     else:
         flash('Sorry we were not able to find any playlists based on the forecast.')
         return redirect('/')
-
-
-
 
 
 @app.route('/sunny-playlists', methods=['GET'])
@@ -165,6 +157,19 @@ def display_rainy_playlists():
     weather_condition = 'rainy'
     return lookup_playlists(weather_condition)
 
+@app.route('/show-featured-playlists', methods=['GET'])
+def show_featured_playlists():
+    sp = get_sp_access_token()
+    limit = 8
+    results = sp.featured_playlists(locale=None, country=None, timestamp=None, limit=limit, offset=0)
+    if results:
+        playlists = []
+        i = 0
+
+        for i in range(limit):
+            playlists.append(results['playlists']['items'][i]['uri'])
+        return render_template('show-featured-playlists.html', playlists=playlists)
+
 ##################################################################################################
 """Helper functions"""
 
@@ -172,7 +177,7 @@ def lookup_zipcode_key():
 
     zipcode = request.args.get("zipcode")
 
-    payload = {'apikey': app.AccuWather_API_Key, 'q': zipcode, 'language': 'en-us'}
+    payload = {'apikey': AccuWather_API_Key, 'q': zipcode, 'language': 'en-us'}
 
     location = requests.get('http://dataservice.accuweather.com/locations/v1/postalcodes/search',
                             params=payload)
@@ -184,7 +189,7 @@ def lookup_zipcode_key():
 def lookup_weather_condition(zipcode_key):
     """Look up weather condition by location key"""
 
-    payload = {'apikey': app.AccuWather_API_Key}
+    payload = {'apikey': AccuWather_API_Key}
 
     weather = requests.get('http://dataservice.accuweather.com/currentconditions/v1/%s' % zipcode_key,
                             params=payload)
@@ -198,20 +203,41 @@ def lookup_weather_condition(zipcode_key):
 def authenticate_spotify():
     """Authenticate spotify with credentials for token without login"""
 
-    credentials = oauth2.SpotifyClientCredentials(client_id=app.Spotify_Client_Id,
-                                                client_secret=app.Spotify_Client_Secret)
+    credentials = oauth2.SpotifyClientCredentials(client_id=Spotify_Client_Id,
+                                                client_secret=Spotify_Client_Secret)
     token = credentials.get_access_token()
 
     spotify = spotipy.Spotify(auth=token)
     return spotify
 
-def refresh_access_token():
-    # global token_info, sp
+# def refresh_access_token():
+#     if sp_oauth.is_token_expired(token_info):
+#         token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
+#         token = token_info['access_token']
+#         sp = spotipy.Spotify(auth=token)
 
-    # if sp_oauth.is_token_expired(token_info):
-        token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
-        token = token_info['access_token']
-        sp = spotipy.Spotify(auth=token)
+def get_sp_access_token():
+    access_token = ""
+    token_info = sp_oauth.get_cached_token()
+
+    if token_info:
+        # print "cached_token found"
+        # print '========='
+        access_token = token_info['access_token']
+        sp = spotipy.Spotify(auth=access_token)
+        return sp
+    else:
+        url = request.url
+        code = sp_oauth.parse_response_code(url)
+        # print code
+        # print '====================code'
+
+        if code:
+            # print "found spotify auth code in request url"
+            sp = sp_oauth.get_access_token(code)
+            access_token = token_info['access_token']
+            return sp
+
 
 def add_user_to_session(access_token):
     sp = spotipy.Spotify(access_token)
@@ -219,6 +245,8 @@ def add_user_to_session(access_token):
     user_id = user['id']
     session['current_user'] = user_id
 
+
+# def add_user_to_db():
 
 
 
