@@ -85,6 +85,7 @@ def login():
         # user_id = user['id']
         sp = spotipy.Spotify(access_token)
         add_user_to_session(access_token)
+        flash('You have sucessfully logged in.')
         return redirect('/show-featured-playlists')
 
 @app.route('/logout')
