@@ -63,34 +63,36 @@ def index():
 
 @app.route('/login')
 def login():
-    access_token = ""
+    # access_token = ""
 
-    token_info = sp_oauth.get_cached_token()
+    # token_info = sp_oauth.get_cached_token()
 
-    url = request.url
-    code = sp_oauth.parse_response_code(url)
+    # url = request.url
+    # code = sp_oauth.parse_response_code(url)
+    #
+    # # print code
+    # # print '===================='
+    #
+    # if code:
+    #     # print "found spotify auth code in request url"
+    #     token_info = sp_oauth.get_access_token(code)
+    #     access_token = token_info['access_token']
+    #     session['access_token'] = access_token
+    access_token = get_sp_access_token()
 
-    # print code
-    # print '===================='
-
-    if code:
-        # print "found spotify auth code in request url"
-        token_info = sp_oauth.get_access_token(code)
-        access_token = token_info['access_token']
-
-    if access_token:
+    # if access_token:
         # print "access token exists"
         # sp = spotipy.Spotify(access_token)
         # user = sp.current_user()
         # user_id = user['id']
-        sp = spotipy.Spotify(access_token)
-        add_user_to_session(access_token)
-        flash('You have sucessfully logged in.')
-        return redirect('/show-featured-playlists')
+    # sp = spotipy.Spotify(access_token)
+    add_user_to_session(access_token)
+    flash('You have sucessfully logged in.')
+    return redirect('/show-featured-playlists')
 
 @app.route('/logout')
 def logout():
-    session.clear()
+    del session['access_token']
     flash('You have sucessfully logged out.')
     return render_template("homepage.html", auth_url=auth_url)
 
@@ -160,9 +162,10 @@ def display_rainy_playlists():
 
 @app.route('/show-featured-playlists', methods=['GET'])
 def show_featured_playlists():
-    sp = get_sp_access_token()
+    # sp = get_sp_access_token()
+    spotify = authenticate_spotify()
     limit = 8
-    results = sp.featured_playlists(locale=None, country=None, timestamp=None, limit=limit, offset=0)
+    results = spotify.featured_playlists(locale=None, country=None, timestamp=None, limit=limit, offset=0)
     if results:
         playlists = []
         i = 0
@@ -225,8 +228,9 @@ def get_sp_access_token():
         # print "cached_token found"
         # print '========='
         access_token = token_info['access_token']
+        session['access_token'] = access_token
         sp = spotipy.Spotify(auth=access_token)
-        return sp
+        return access_token
     else:
         url = request.url
         code = sp_oauth.parse_response_code(url)
@@ -235,17 +239,20 @@ def get_sp_access_token():
 
         if code:
             # print "found spotify auth code in request url"
-            sp = sp_oauth.get_access_token(code)
+            token_info = sp_oauth.get_access_token(code)
             access_token = token_info['access_token']
-            return sp
+            return access_token
 
 
 def add_user_to_session(access_token):
     sp = spotipy.Spotify(access_token)
     user = sp.current_user()
-    user_id = user['id']
+    spotify_user_id = user['id']
     session['current_user'] = user_id
-
+    spotify_user = User(spotify_user_id=spotify_user_id)
+    db.session.add(spotify_user)
+    db.session.commit()
+    print "spotify_user added successfully"
 
 # def add_user_to_db():
 
