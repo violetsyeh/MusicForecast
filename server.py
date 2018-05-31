@@ -214,21 +214,25 @@ def authenticate_spotify():
     spotify = spotipy.Spotify(auth=token)
     return spotify
 
-# def refresh_access_token():
-#     if sp_oauth.is_token_expired(token_info):
-#         token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
-#         token = token_info['access_token']
-#         sp = spotipy.Spotify(auth=token)
+def refresh_access_token():
+    if sp_oauth.is_token_expired(token_info):
+        token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
+        token = token_info['access_token']
+        sp = spotipy.Spotify(auth=token)
+        return sp
 
 def get_sp_access_token():
     access_token = ""
     token_info = sp_oauth.get_cached_token()
+    print token_info
 
     if token_info:
         # print "cached_token found"
         # print '========='
         access_token = token_info['access_token']
+        refresh_token = token_info['refresh_token']
         session['access_token'] = access_token
+        session['refresh_token'] = refresh_token
         sp = spotipy.Spotify(auth=access_token)
         return access_token
     else:
@@ -248,7 +252,7 @@ def add_user_to_session(access_token):
     sp = spotipy.Spotify(access_token)
     user = sp.current_user()
     spotify_user_id = user['id']
-    session['current_user'] = user_id
+    session['current_user'] = spotify_user_id
     spotify_user = User(spotify_user_id=spotify_user_id)
     db.session.add(spotify_user)
     db.session.commit()
