@@ -4,5 +4,7 @@
 {% for playlist in playlists %}
 <iframe src="https://open.spotify.com/embed?uri={{playlist}}"
 width="300" height="380" frameborder="0" allowtransparency="true"></iframe>
+<form action="/follow-playlist/" method="post"><input type="submit" name="submit" value="follow"></form>
+
 {% endfor %}
 {% endblock %}

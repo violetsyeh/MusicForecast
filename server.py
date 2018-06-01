@@ -164,15 +164,44 @@ def display_rainy_playlists():
 def show_featured_playlists():
     # sp = get_sp_access_token()
     spotify = authenticate_spotify()
-    limit = 8
+    limit = 1
     results = spotify.featured_playlists(locale=None, country=None, timestamp=None, limit=limit, offset=0)
+    print results
     if results:
         playlists = []
         i = 0
 
         for i in range(limit):
             playlists.append(results['playlists']['items'][i]['uri'])
+            print playlists
+            print results['playlists']['items'][0]['owner']['uri']
         return render_template('show-featured-playlists.html', playlists=playlists)
+
+@app.route('/follow-playlist/', methods=['POST'])
+def follow_playlist():
+    access_token = get_sp_access_token()
+    sp = spotipy.Spotify(auth=access_token)
+
+    ########################################
+    spotify = authenticate_spotify()
+    limit = 1
+    results = spotify.featured_playlists(locale=None, country=None, timestamp=None, limit=limit, offset=0)
+    print results
+    if results:
+        playlists = []
+        i = 0
+
+        for i in range(limit):
+            playlists.append(results['playlists']['items'][i]['uri'])
+            print playlists
+            print results['playlists']['items'][0]['owner']['uri']
+            ######################################
+
+    follow = sp.user_playlist_follow_playlist(playlist_owner_id=results['playlists']['items'][0]['owner']['uri'],
+                        playlist_id=playlists)
+    print follow
+    print '===================='
+    return render_template('homepage.html')
 
 ##################################################################################################
 """Helper functions"""
@@ -245,6 +274,8 @@ def get_sp_access_token():
             # print "found spotify auth code in request url"
             token_info = sp_oauth.get_access_token(code)
             access_token = token_info['access_token']
+            session['access_token'] = access_token
+            session['refresh_token'] = refresh_token
             return access_token
 
 
