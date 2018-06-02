@@ -53,12 +53,12 @@ def index():
     #         # print "found spotify auth code in request url"
     #         token_info = sp_oauth.get_access_token(code)
     #         access_token = token_info['access_token']
-    if token_info:
-        get_sp_access_token()
-        return render_template("homepage.html", auth_url=auth_url)
+    # if token_info:
+    get_sp_access_token()
+    return render_template("homepage.html", auth_url=auth_url)
     # if access_token:
-    else:
-        return redirect('/login')
+    # else:
+    #     return redirect('/login')
 
 
 @app.route('/login')
@@ -164,7 +164,7 @@ def display_rainy_playlists():
 def show_featured_playlists():
     # sp = get_sp_access_token()
     spotify = authenticate_spotify()
-    limit = 1
+    limit = 6
     results = spotify.featured_playlists(locale=None, country=None, timestamp=None, limit=limit, offset=0)
     print results
     if results:
@@ -173,8 +173,6 @@ def show_featured_playlists():
 
         for i in range(limit):
             playlists.append(results['playlists']['items'][i]['uri'])
-            print playlists
-            print results['playlists']['items'][0]['owner']['uri']
         return render_template('show-featured-playlists.html', playlists=playlists)
 
 @app.route('/follow-playlist/', methods=['POST'])
@@ -197,11 +195,22 @@ def follow_playlist():
             print results['playlists']['items'][0]['owner']['uri']
             ######################################
 
-    follow = sp.user_playlist_follow_playlist(playlist_owner_id=results['playlists']['items'][0]['owner']['uri'],
-                        playlist_id=playlists)
+    follow = sp.user_playlist_follow_playlist(playlist_owner_id=results['playlists']['items'][0]['owner']['id'],
+                        playlist_id=results['playlists']['items'][0]['id'])
     print follow
     print '===================='
-    return render_template('homepage.html')
+    return render_template('playlists-user-follows.html')
+
+@app.route('/current-followed-playlists', methods=['GET'])
+def show_followed_playlists():
+    access_token = get_sp_access_token()
+    sp = spotipy.Spotify(auth=access_token)
+    user = sp.current_user()
+    user_id = user['id']
+    limit = 6
+    playlists = sp.user_playlists(user=user_id, limit=limit, offset=0)
+    print playlists
+    return render_template('current-followed-playlists.html')
 
 ##################################################################################################
 """Helper functions"""
@@ -274,6 +283,7 @@ def get_sp_access_token():
             # print "found spotify auth code in request url"
             token_info = sp_oauth.get_access_token(code)
             access_token = token_info['access_token']
+            refresh_token = token_info['refresh_token']
             session['access_token'] = access_token
             session['refresh_token'] = refresh_token
             return access_token
