@@ -2,9 +2,11 @@
 var timer
 
 function setTimer(){
-  timer = setInterval(3600)
+  timer = setInterval(3600);
 }
 
 function refresh_Token(){
-  $.get('/refresh-token', setTimer)
+  $.get('/refresh-token', setTimer);
 }
+
+$("#")

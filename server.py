@@ -32,32 +32,15 @@ def index():
 
 @app.route('/login')
 def login():
-    # access_token = ""
-
-    # token_info = sp_oauth.get_cached_token()
-
-    # url = request.url
-    # code = sp_oauth.parse_response_code(url)
-    #
-    # # print code
-    # # print '===================='
-    #
-    # if code:
-    #     # print "found spotify auth code in request url"
-    #     token_info = sp_oauth.get_access_token(code)
-    #     access_token = token_info['access_token']
-    #     session['access_token'] = access_token
-    access_token = get_sp_access_token()
-
-    # if access_token:
-        # print "access token exists"
-        # sp = spotipy.Spotify(access_token)
-        # user = sp.current_user()
-        # user_id = user['id']
-    # sp = spotipy.Spotify(access_token)
-    add_user_to_session(access_token)
-    flash('You have sucessfully logged in.')
-    return redirect('/show-featured-playlists')
+    token_info = sp_oauth.get_cached_token()
+    if token_info:
+        flash('You are already logged in')
+        return redirect('/show-featured-playlists')
+    else:
+        access_token = get_sp_access_token()
+        add_user_to_session(access_token)
+        flash('You have sucessfully logged in.')
+        return redirect('/show-featured-playlists')
 
 @app.route('/logout')
 def logout():
@@ -134,26 +117,29 @@ def display_rainy_playlists():
 @app.route('/show-featured-playlists', methods=['GET'])
 def show_featured_playlists():
     spotify = authenticate_spotify()
-    limit = 2
+    limit = 6
     results = spotify.featured_playlists(locale=None, country=None, timestamp=None, limit=limit, offset=0)
-    print results
-    print '===========results'
+    # print results
+    # print '===========results'
     if results:
         playlists = []
-        playlist_owner_id = []
-        playlist_id = []
         i = 0
 
         for i in range(limit):
-            playlists.append(results['playlists']['items'][i]['uri'])
-            playlist_owner_id.append(results['playlists']['items'][i]['owner']['id'])
-            print playlist_owner_id
-            print "playlist_owner_id ==========="
-            playlist_id.append(results['playlists']['items'][i]['id'])
-            print playlist_id
-            print 'playlist_id=========='
-        return render_template('show-featured-playlists.html', playlists=playlists, playlist_owner_id=playlist_owner_id, playlist_id=playlist_id)
-
+            playlists.append((results['playlists']['items'][i]['uri'], results['playlists']['items'][i]['owner']['id'],
+                            results['playlists']['items'][i]['id']))
+            # playlist_owner_id.append(results['playlists']['items'][i]['owner']['id'])
+            # print playlist_owner_id
+            # print "playlist_owner_id ==========="
+            # playlist_id.append(results['playlists']['items'][i]['id'])
+            # print playlist_id
+            # print 'playlist_id=========='
+        print playlists
+        return render_template('show-featured-playlists.html', playlists=playlists)
+    else:
+        flash('Unable to display featured playlists right now.')
+        return redirect('/')
+        
 @app.route('/follow-playlist/', methods=['GET','POST'])
 def follow_playlist():
     access_token = get_sp_access_token()
@@ -161,7 +147,7 @@ def follow_playlist():
 
     playlist_owner_id = request.form.get("playlist_owner_id")
     print playlist_owner_id
-    print 'playlist_owner_id  form'
+    print 'playlist_owner_id form'
     playlist_id = request.form.get("playlist_id")
     print playlist_id
     print 'playlist_id form'
@@ -194,8 +180,10 @@ def show_followed_playlists():
 
         for i in range(playlist_len):
             playlists.append(results['items'][i]['uri'])
-
-    return render_template('current-followed-playlists.html', playlists=playlists)
+        return render_template('current-followed-playlists.html', playlists=playlists)
+    else:
+        flash('You do not follow any playlists currently.')
+        return redirect('/')
 
 @app.route('/refresh-token')
 def refresh():
