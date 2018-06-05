@@ -4,7 +4,14 @@
 {% for playlist in playlists %}
 <iframe src="https://open.spotify.com/embed?uri={{playlist}}"
 width="300" height="380" frameborder="0" allowtransparency="true"></iframe>
-<form action="/follow-playlist/" method="post"><input type="submit" name="submit" value="follow"></form>
-
+<form action="/follow-playlist/"method="post"><input type="submit" name="follow"
+  value="Follow">
+  {% for owner_id in playlist_owner_id %}
+  {% for id in playlist_id %}
+<input type="hidden" name="playlist_owner_id" value="{{owner_id}}">
+<input type="hidden" name="playlist_id" value="{{id}}">
+</form>
+{% endfor %}
+{% endfor %}
 {% endfor %}
 {% endblock %}

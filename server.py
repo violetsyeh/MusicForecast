@@ -6,6 +6,7 @@ from model import User, Playlist, connect_to_db, db
 import spotipy
 import os
 import requests
+import time
 import spotipy.oauth2 as oauth2
 import spotipy.util as util
 from config import AccuWather_API_Key, Spotify_Client_Id, Spotify_Client_Secret, Redirect_Uri, SCOPE, CACHE
@@ -27,39 +28,7 @@ auth_url = sp_oauth.get_authorize_url()
 @app.route('/')
 def index():
     """Homepage."""
-
-    # access_token = ""
-    token_info = sp_oauth.get_cached_token()
-    #
-    # if token_info:
-    #     # print "cached_token found"
-    #     # print '========='
-    #     access_token = token_info['access_token']
-    #
-    #     # if credentials.is_token_expired(token_info):
-    #     #     refresh_access_token()
-    # # else:
-    #     sp = spotipy.Spotify(auth=access_token)
-    #     user = sp.current_user()
-    #     return render_template('homepage.html', user=user, auth_url=auth_url)
-    #
-    # else:
-    #     url = request.url
-    #     code = sp_oauth.parse_response_code(url)
-    #     # print code
-    #     # print '====================code'
-    #
-    #     if code:
-    #         # print "found spotify auth code in request url"
-    #         token_info = sp_oauth.get_access_token(code)
-    #         access_token = token_info['access_token']
-    # if token_info:
-    get_sp_access_token()
-    return render_template("homepage.html", auth_url=auth_url)
-    # if access_token:
-    # else:
-    #     return redirect('/login')
-
+    return render_template("homepage.html")
 
 @app.route('/login')
 def login():
@@ -92,10 +61,12 @@ def login():
 
 @app.route('/logout')
 def logout():
-    del session['access_token']
-    flash('You have sucessfully logged out.')
-    return render_template("homepage.html", auth_url=auth_url)
-
+    if session['access_token']:
+        del session['access_token']
+        flash('You have sucessfully logged out.')
+        return redirect('/')
+    else:
+        return redirect('/')
 
 
 @app.route('/weather-playlist-lookup', methods=['GET'])
@@ -162,44 +133,49 @@ def display_rainy_playlists():
 
 @app.route('/show-featured-playlists', methods=['GET'])
 def show_featured_playlists():
-    # sp = get_sp_access_token()
     spotify = authenticate_spotify()
-    limit = 6
+    limit = 2
     results = spotify.featured_playlists(locale=None, country=None, timestamp=None, limit=limit, offset=0)
     print results
+    print '===========results'
     if results:
         playlists = []
+        playlist_owner_id = []
+        playlist_id = []
         i = 0
 
         for i in range(limit):
             playlists.append(results['playlists']['items'][i]['uri'])
-        return render_template('show-featured-playlists.html', playlists=playlists)
+            playlist_owner_id.append(results['playlists']['items'][i]['owner']['id'])
+            print playlist_owner_id
+            print "playlist_owner_id ==========="
+            playlist_id.append(results['playlists']['items'][i]['id'])
+            print playlist_id
+            print 'playlist_id=========='
+        return render_template('show-featured-playlists.html', playlists=playlists, playlist_owner_id=playlist_owner_id, playlist_id=playlist_id)
 
-@app.route('/follow-playlist/', methods=['POST'])
+@app.route('/follow-playlist/', methods=['GET','POST'])
 def follow_playlist():
     access_token = get_sp_access_token()
     sp = spotipy.Spotify(auth=access_token)
 
-    ########################################
-    spotify = authenticate_spotify()
-    limit = 1
-    results = spotify.featured_playlists(locale=None, country=None, timestamp=None, limit=limit, offset=0)
-    print results
-    if results:
-        playlists = []
-        i = 0
-
-        for i in range(limit):
-            playlists.append(results['playlists']['items'][i]['uri'])
-            print playlists
-            print results['playlists']['items'][0]['owner']['uri']
-            ######################################
-
-    follow = sp.user_playlist_follow_playlist(playlist_owner_id=results['playlists']['items'][0]['owner']['id'],
-                        playlist_id=results['playlists']['items'][0]['id'])
-    print follow
-    print '===================='
-    return render_template('playlists-user-follows.html')
+    playlist_owner_id = request.form.get("playlist_owner_id")
+    print playlist_owner_id
+    print 'playlist_owner_id  form'
+    playlist_id = request.form.get("playlist_id")
+    print playlist_id
+    print 'playlist_id form'
+    user = sp.current_user()
+    user_id = user['id']
+    response = sp.user_playlist_is_following(playlist_owner_id=playlist_owner_id, playlist_id=playlist_id, user_ids=[user_id])
+    print response
+    if response == [True]:
+        flash('You are already following that playlist.')
+        redirect('/current-followed-playlists')
+    else:
+        sp.user_playlist_follow_playlist(playlist_owner_id=playlist_owner_id,
+                            playlist_id=playlist_id)
+    return redirect('/current-followed-playlists')
 
 @app.route('/current-followed-playlists', methods=['GET'])
 def show_followed_playlists():
@@ -207,10 +183,37 @@ def show_followed_playlists():
     sp = spotipy.Spotify(auth=access_token)
     user = sp.current_user()
     user_id = user['id']
-    limit = 6
-    playlists = sp.user_playlists(user=user_id, limit=limit, offset=0)
-    print playlists
-    return render_template('current-followed-playlists.html')
+    limit = 10
+    results = sp.user_playlists(user=user_id, limit=limit, offset=0)
+    playlist_len = results['total']
+    print playlist_len
+    print '=============='
+    if results:
+        playlists = []
+        i = 0
+
+        for i in range(playlist_len):
+            playlists.append(results['items'][i]['uri'])
+
+    return render_template('current-followed-playlists.html', playlists=playlists)
+
+@app.route('/refresh-token')
+def refresh():
+    token_info = sp_oauth.get_cached_token()
+    print token_info
+    # access_token = get_sp_access_token()
+    # print access_token
+    # print '=============0---------------'
+    # # sp = spotipy.Spotify(auth=access_token)
+    expired_result = is_token_expired(token_info)
+    print expired_result
+    if expired_result:
+        token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
+        print token_info
+        print '================='
+        token = token_info['access_token']
+        # sp = spotipy.Spotify(auth=token)
+        return token
 
 ##################################################################################################
 """Helper functions"""
@@ -252,21 +255,12 @@ def authenticate_spotify():
     spotify = spotipy.Spotify(auth=token)
     return spotify
 
-def refresh_access_token():
-    if sp_oauth.is_token_expired(token_info):
-        token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
-        token = token_info['access_token']
-        sp = spotipy.Spotify(auth=token)
-        return sp
-
 def get_sp_access_token():
     access_token = ""
     token_info = sp_oauth.get_cached_token()
     print token_info
 
     if token_info:
-        # print "cached_token found"
-        # print '========='
         access_token = token_info['access_token']
         refresh_token = token_info['refresh_token']
         session['access_token'] = access_token
@@ -276,11 +270,8 @@ def get_sp_access_token():
     else:
         url = request.url
         code = sp_oauth.parse_response_code(url)
-        # print code
-        # print '====================code'
 
         if code:
-            # print "found spotify auth code in request url"
             token_info = sp_oauth.get_access_token(code)
             access_token = token_info['access_token']
             refresh_token = token_info['refresh_token']
@@ -288,6 +279,9 @@ def get_sp_access_token():
             session['refresh_token'] = refresh_token
             return access_token
 
+def is_token_expired(token_info):
+    now = int(time.time())
+    return token_info['expires_at'] - now < 60
 
 def add_user_to_session(access_token):
     sp = spotipy.Spotify(access_token)
@@ -299,7 +293,6 @@ def add_user_to_session(access_token):
     db.session.commit()
     print "spotify_user added successfully"
 
-# def add_user_to_db():
 
 
 
