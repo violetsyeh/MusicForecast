@@ -33,14 +33,18 @@ def index():
 @app.route('/login')
 def login():
     token_info = sp_oauth.get_cached_token()
-    if token_info:
-        flash('You are already logged in')
-        return redirect('/show-featured-playlists')
-    else:
-        access_token = get_sp_access_token()
+    # if token_info:
+    #     # flash('You are already logged in')
+    #
+    #     return redirect('/show-featured-playlists')
+    # else:
+    access_token = get_sp_access_token()
+    if access_token:
         add_user_to_session(access_token)
         flash('You have sucessfully logged in.')
-        return redirect('/show-featured-playlists')
+    else:
+        flash('Your Spotify Account was unable to be verified.')
+    return redirect('/show-featured-playlists')
 
 @app.route('/logout')
 def logout():
@@ -86,7 +90,8 @@ def lookup_playlists(weather_condition):
         i = 0
 
         for i in range(limit):
-            playlists.append(results['playlists']['items'][i]['uri'])
+            playlists.append((results['playlists']['items'][i]['uri'], results['playlists']['items'][i]['owner']['id'],
+                            results['playlists']['items'][i]['id']))
         return render_template("show-playlists.html", playlists=playlists, weather_condition=weather_condition)
     else:
         flash('Sorry we were not able to find any playlists based on the forecast.')
@@ -119,8 +124,6 @@ def show_featured_playlists():
     spotify = authenticate_spotify()
     limit = 6
     results = spotify.featured_playlists(locale=None, country=None, timestamp=None, limit=limit, offset=0)
-    # print results
-    # print '===========results'
     if results:
         playlists = []
         i = 0
@@ -128,33 +131,26 @@ def show_featured_playlists():
         for i in range(limit):
             playlists.append((results['playlists']['items'][i]['uri'], results['playlists']['items'][i]['owner']['id'],
                             results['playlists']['items'][i]['id']))
-            # playlist_owner_id.append(results['playlists']['items'][i]['owner']['id'])
-            # print playlist_owner_id
-            # print "playlist_owner_id ==========="
-            # playlist_id.append(results['playlists']['items'][i]['id'])
-            # print playlist_id
-            # print 'playlist_id=========='
-        print playlists
         return render_template('show-featured-playlists.html', playlists=playlists)
     else:
         flash('Unable to display featured playlists right now.')
         return redirect('/')
-        
+
 @app.route('/follow-playlist/', methods=['GET','POST'])
 def follow_playlist():
     access_token = get_sp_access_token()
     sp = spotipy.Spotify(auth=access_token)
 
     playlist_owner_id = request.form.get("playlist_owner_id")
-    print playlist_owner_id
-    print 'playlist_owner_id form'
+    # print playlist_owner_id
+    # print 'playlist_owner_id form'
     playlist_id = request.form.get("playlist_id")
-    print playlist_id
-    print 'playlist_id form'
+    # print playlist_id
+    # print 'playlist_id form'
     user = sp.current_user()
     user_id = user['id']
     response = sp.user_playlist_is_following(playlist_owner_id=playlist_owner_id, playlist_id=playlist_id, user_ids=[user_id])
-    print response
+    # print response
     if response == [True]:
         flash('You are already following that playlist.')
         redirect('/current-followed-playlists')
@@ -172,8 +168,8 @@ def show_followed_playlists():
     limit = 10
     results = sp.user_playlists(user=user_id, limit=limit, offset=0)
     playlist_len = results['total']
-    print playlist_len
-    print '=============='
+    # print playlist_len
+    # print '=============='
     if results:
         playlists = []
         i = 0
@@ -202,7 +198,7 @@ def refresh():
         token = token_info['access_token']
         # sp = spotipy.Spotify(auth=token)
         return token
-
+    return 'token still valid'
 ##################################################################################################
 """Helper functions"""
 
@@ -246,7 +242,7 @@ def authenticate_spotify():
 def get_sp_access_token():
     access_token = ""
     token_info = sp_oauth.get_cached_token()
-    print token_info
+    # print token_info
 
     if token_info:
         access_token = token_info['access_token']

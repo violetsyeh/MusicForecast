@@ -1,12 +1,15 @@
 "use strict";
-var timer
 
 function setTimer(){
-  timer = setInterval(3600);
-}
+  console.log( "timer set" );
+  setInterval(refresh_Token,360000);
+};
 
 function refresh_Token(){
-  $.get('/refresh-token', setTimer);
-}
+  $.get('/refresh-token', function() {
+    console.log('token refresh');
+  });
+};
 
-$("#")
+
+$(document).ready(setTimer);
