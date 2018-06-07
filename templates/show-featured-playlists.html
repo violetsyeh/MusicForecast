@@ -1,13 +1,18 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>Today's featured playlists</h2>
+<div class='playlist_background'>
+
+
+<h2>Today's featured playlists:</h2>
 {% for playlist, owner_id, id in playlists %}
+
 <iframe src="https://open.spotify.com/embed?uri={{playlist}}"
-width="300" height="380" frameborder="0" allowtransparency="true"></iframe>
+  width="350" height="380" style="float:left" frameborder="0" allowtransparency="true"></iframe>
 <form action="/follow-playlist/"method="post">
-  <button type="submit" class="btn btn-success">Follow</button>
+  <button type="submit" <iframe style="float:left" class="btn btn-success">Follow</button>
 <input type="hidden" name="playlist_owner_id" value="{{owner_id}}">
 <input type="hidden" name="playlist_id" value="{{id}}">
 </form>
 {% endfor %}
+</div>
 {% endblock %}

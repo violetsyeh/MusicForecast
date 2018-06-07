@@ -3,9 +3,10 @@
 <h1>Your {{weather_condition}} playlists for today: </h1>
 {% for playlist, owner_id, id in playlists %}
 <iframe src="https://open.spotify.com/embed?uri={{playlist}}"
-width="300" height="380" frameborder="0" allowtransparency="true"></iframe>
-<form action="/follow-playlist/"method="post"><input type="submit" name="follow"
-  value="Follow">
+width="350" height="380" frameborder="0"style="float:left" allowtransparency="true"></iframe>
+
+<form action="/follow-playlist/"method="post">
+  <button type="submit" style="float:left" class="btn btn-success">Follow</button>
 <input type="hidden" name="playlist_owner_id" value="{{owner_id}}">
 <input type="hidden" name="playlist_id" value="{{id}}">
 </form>

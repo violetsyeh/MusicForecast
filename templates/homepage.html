@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="homie">
+<div class="index_background">
+  {% if not session.get('access_token') %}
   <button type="button" class="btn btn-success" onclick="window.location.href='/login'">Login with Spotify</button>
+{% endif %}
 </div>
 {% endblock %}

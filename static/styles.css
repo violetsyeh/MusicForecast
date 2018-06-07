@@ -1,4 +1,4 @@
-.homie {
+.index_background {
   background-image: url('images/homepage-img.jpg');
   height: 1000px;
   background-position: center;
@@ -6,10 +6,26 @@
   background-size: cover;
 }
 
-.navbar-brand {
-  font-color: #D3B7B9;
+.dropdown-menu {
+  font-size: 1.15rem;
+  top: 51px;
+  background-color: rgb(124, 112, 134, 0.6);
+  border-radius: 0 0 15% 15%;
+  min-width: 185px;
 }
 
+a.nav-link{
+  font-size: 1.25rem;
+}
+
+a.navbar-brand{
+  font-size: 1.5rem;
+}
+
+a.dropdown-item:hover {
+  background-color: rgb(124, 112, 134, 0.1);
+}
 body{
+  background-color: rgb(211,183,185, 0.55);
   font-family: 'Didact Gothic', sans-serif;
 }

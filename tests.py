@@ -7,7 +7,9 @@ from flask import Flask
 from model import db, connect_to_db
 import json
 
-app.AccuWather_API_Key = os.environ['AccuWeather_Key']
+AccuWather_API_Key = os.environ['AccuWeather_Key']
+Spotify_Client_Id = os.environ['Spotify_Client_Id']
+Spotify_Client_Secret = os.environ['Spotify_Client_Secret']
 
 class FlaskTests(TestCase):
 
@@ -16,30 +18,44 @@ class FlaskTests(TestCase):
         self.client = app.test_client()
         app.config['TESTING'] = True
 
-    def test_index(self):
+    def test_sunny_dropdown(self):
 
-        result = self.client.get('/')
-        self.assertIn('<h2>Enter your zipcode here:</h2>', result.data)
+        result = self.client.get('/sunny-playlists')
+        self.assertIn('<h1>Your sunny playlists for today: </h1>', result.data)
+    def test_cloudy_dropdown(self):
 
-class FlaskRouteTests(TestCase):
+        result = self.client.get('/cloudy-playlists')
+        self.assertIn('<h1>Your cloudy playlists for today: </h1>', result.data)
 
-    def setUp(self):
+    def test_rainy_dropdown(self):
 
-        self.client = server.app.test_client()
-        app.config['TESTING'] = True
-        app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
-        # Spotify_Client_Id = os.environ['Spotify_Client_Id']
-        # Spotify_Client_Secret = os.environ['Spotify_Client_Secret']
+        result = self.client.get('/rainy-playlists')
+        self.assertIn('<h1>Your rainy playlists for today: </h1>', result.data)
 
-    def test_incorrect_zipcode(self):
+    def test_show_featured_playlists(self):
 
-        result = self.client.get('/weather-playlist-lookup', query_string={'zipcode':'jam'}, follow_redirects=True)
-        self.assertIn('Please enter a valid zipcode.',result.data)
+        result = self.client.get('/show-featured-playlists')
+        self.assertIn("<h2>Today's featured playlists:</h2>", result.data)
 
-    def test_zipcode_to_key(self):
-        result = self.client.get('/weather-playlist-lookup', query_string={'zipcode':'94030'}, follow_redirects=True)
-        self.assertIsNot('Please enter a valid zipcode.', result.data)
-        self.assertIn('playlists for today:', result.data)
+# class FlaskRouteTests(TestCase):
+#
+#     def setUp(self):
+#
+#         self.client = server.app.test_client()
+#         app.config['TESTING'] = True
+#         app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
+#         # Spotify_Client_Id = os.environ['Spotify_Client_Id']
+#         # Spotify_Client_Secret = os.environ['Spotify_Client_Secret']
+#
+#     def test_incorrect_zipcode(self):
+#
+#         result = self.client.get('/weather-playlist-lookup', query_string={'zipcode':'jam'}, follow_redirects=True)
+#         self.assertIn('Please enter a valid zipcode.',result.data)
+#
+#     def test_zipcode_to_key(self):
+#         result = self.client.get('/weather-playlist-lookup', query_string={'zipcode':'94030'}, follow_redirects=True)
+#         self.assertIsNot('Please enter a valid zipcode.', result.data)
+#         self.assertIn('playlists for today:', result.data)
         # self.assertEqual(zipcode_key == '39346_PC')
 
 # class HelperFunctionTests(TestCase):

@@ -81,7 +81,7 @@ def display_playlists():
 def lookup_playlists(weather_condition):
     """Look up playlists related to weather condition"""
 
-    limit = 8
+    limit = 6
     spotify = authenticate_spotify()
     results = spotify.search(q=weather_condition, type='playlist', market='US', limit=limit, offset=0)
 
