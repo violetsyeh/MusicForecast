@@ -1,0 +1,15 @@
+.homie {
+  background-image: url('images/homepage-img.jpg');
+  height: 1000px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.navbar-brand {
+  font-color: #D3B7B9;
+}
+
+body{
+  font-family: 'Didact Gothic', sans-serif;
+}
