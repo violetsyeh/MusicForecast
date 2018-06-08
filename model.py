@@ -18,6 +18,7 @@ class User(db.Model):
     zipcode = db.Column(db.String(15), nullable=True)
     fname = db.Column(db.String(64), nullable=True)
     lname = db.Column(db.String(64), nullable=True)
+    access_token = db.Column(db.String(64), nullable=True)
 
     def __repr__(self):
         """Return user info"""

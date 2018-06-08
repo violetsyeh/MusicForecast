@@ -81,7 +81,7 @@ def display_playlists():
 def lookup_playlists(weather_condition):
     """Look up playlists related to weather condition"""
 
-    limit = 6
+    limit = 9
     spotify = authenticate_spotify()
     results = spotify.search(q=weather_condition, type='playlist', market='US', limit=limit, offset=0)
 
@@ -122,7 +122,7 @@ def display_rainy_playlists():
 @app.route('/show-featured-playlists', methods=['GET'])
 def show_featured_playlists():
     spotify = authenticate_spotify()
-    limit = 6
+    limit = 9
     results = spotify.featured_playlists(locale=None, country=None, timestamp=None, limit=limit, offset=0)
     if results:
         playlists = []
