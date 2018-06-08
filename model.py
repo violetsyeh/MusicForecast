@@ -24,7 +24,7 @@ class User(db.Model):
         """Return user info"""
 
         return "< User user_id={} email={} zipcode={} >".format(self.user_id, self.email,
-                                                            self.zipcode, self.city)
+                                                            self.zipcode)
 
 class Playlist(db.Model):
     """Playlists from website"""

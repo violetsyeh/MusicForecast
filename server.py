@@ -9,7 +9,7 @@ import requests
 import time
 import spotipy.oauth2 as oauth2
 import spotipy.util as util
-from config import AccuWather_API_Key, Spotify_Client_Id, Spotify_Client_Secret, Redirect_Uri, SCOPE, CACHE
+from config import AccuWather_API_Key, Spotify_Client_Id, Spotify_Client_Secret, Redirect_Uri, SCOPE, CACHE, logout_url
 
 app = Flask(__name__)
 
@@ -28,9 +28,9 @@ auth_url = sp_oauth.get_authorize_url()
 @app.route('/')
 def index():
     """Homepage."""
-    return render_template("homepage.html")
+    return render_template("homepage.html", auth_url=auth_url)
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     token_info = sp_oauth.get_cached_token()
     # if token_info:
@@ -39,21 +39,20 @@ def login():
     #     return redirect('/show-featured-playlists')
     # else:
     access_token = get_sp_access_token()
+    print access_token
     if access_token:
         add_user_to_session(access_token)
         flash('You have sucessfully logged in.')
+        return redirect('/show-featured-playlists')
     else:
         flash('Your Spotify Account was unable to be verified.')
     return redirect('/show-featured-playlists')
 
 @app.route('/logout')
 def logout():
-    if session['access_token']:
-        del session['access_token']
-        flash('You have sucessfully logged out.')
-        return redirect('/')
-    else:
-        return redirect('/')
+
+    session.clear()
+    return redirect('/')
 
 
 @app.route('/weather-playlist-lookup', methods=['GET'])
@@ -83,6 +82,7 @@ def lookup_playlists(weather_condition):
 
     limit = 9
     spotify = authenticate_spotify()
+
     results = spotify.search(q=weather_condition, type='playlist', market='US', limit=limit, offset=0)
 
     if results:
@@ -184,13 +184,11 @@ def show_followed_playlists():
 @app.route('/refresh-token')
 def refresh():
     token_info = sp_oauth.get_cached_token()
-    print token_info
     # access_token = get_sp_access_token()
     # print access_token
     # print '=============0---------------'
     # # sp = spotipy.Spotify(auth=access_token)
     expired_result = is_token_expired(token_info)
-    print expired_result
     if expired_result:
         token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
         print token_info
@@ -271,10 +269,15 @@ def add_user_to_session(access_token):
     sp = spotipy.Spotify(access_token)
     user = sp.current_user()
     spotify_user_id = user['id']
-    session['current_user'] = spotify_user_id
-    spotify_user = User(spotify_user_id=spotify_user_id)
-    db.session.add(spotify_user)
-    db.session.commit()
+    find_user = User.query.filter(User.spotify_user_id == spotify_user_id).first()
+    print find_user
+    if find_user:
+        print 'User already in database'
+    else:
+        session['current_user'] = spotify_user_id
+        spotify_user = User(spotify_user_id=spotify_user_id, access_token= access_token)
+        db.session.add(spotify_user)
+        db.session.commit()
     print "spotify_user added successfully"
 
 

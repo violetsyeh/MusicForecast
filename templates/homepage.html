@@ -2,7 +2,7 @@
 {% block content %}
 <div class="index_background">
   {% if not session.get('access_token') %}
-  <button type="button" class="btn btn-success" onclick="window.location.href='/login'">Login with Spotify</button>
+  <button type="button" class="btn btn-success" onclick="window.location.href='{{auth_url}}'">Login with Spotify</button>
 {% endif %}
 </div>
 {% endblock %}

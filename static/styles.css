@@ -23,7 +23,7 @@ a.navbar-brand{
 }
 
 a.dropdown-item:hover {
-  background-color: rgb(124, 112, 134, 0.1);
+  background-color: rgb(124, 112, 134, 0.3);
 }
 body{
   background-color: rgb(211,183,185, 0.55);
