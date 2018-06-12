@@ -165,7 +165,7 @@ def show_followed_playlists():
     sp = spotipy.Spotify(auth=access_token)
     user = sp.current_user()
     user_id = user['id']
-    limit = 10
+    limit = 20
     results = sp.user_playlists(user=user_id, limit=limit, offset=0)
     playlist_len = results['total']
     # print playlist_len
