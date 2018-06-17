@@ -9,7 +9,7 @@
 .dropdown-menu {
   font-size: 1.15rem;
   top: 51px;
-  background-color: rgb(124, 112, 134, 0.6);
+  background-color: rgb(124, 112, 134, 0.95);
   border-radius: 0 0 15% 15%;
   min-width: 185px;
 }
@@ -23,7 +23,7 @@ a.navbar-brand{
 }
 
 a.dropdown-item:hover {
-  background-color: rgb(124, 112, 134, 0.3);
+  background-color: rgb(203, 186, 211);
 }
 body{
   background-color: rgb(211,183,185, 0.55);
