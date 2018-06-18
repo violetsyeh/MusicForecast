@@ -15,6 +15,10 @@ Frontend: JavaScript, jQuery, AJAX, Jinja2, Bootstrap, HTML5, CSS3<br/>
 APIs: AccuWeather, Spotify<br/>
 
 ## <a name="features"></a>Features
+Playlists through zipcode or dropdown
+![zipcode](/static/images/readme/)
+
+Login with Spotify account  
 ![OAuth2](/static/images/readme/login.gif)
 
 ## <a name="install"></a>Installation
