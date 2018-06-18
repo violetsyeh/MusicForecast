@@ -15,6 +15,7 @@ Frontend: JavaScript, jQuery, AJAX, Jinja2, Bootstrap, HTML5, CSS3<br/>
 APIs: AccuWeather, Spotify<br/>
 
 ## <a name="features"></a>Features
+(/static/images/readme/MusicForecastLogin.mov)
 
 ## <a name="install"></a>Installation
 
