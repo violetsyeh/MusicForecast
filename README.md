@@ -15,8 +15,8 @@ Frontend: JavaScript, jQuery, AJAX, Jinja2, Bootstrap, HTML5, CSS3<br/>
 APIs: AccuWeather, Spotify<br/>
 
 ## <a name="features"></a>Features
-Playlists through zipcode or weather condition dropdown</br>
-![zipcode](/static/images/readme/weather_condition.gif)</br>
+Spotify playlists based on the weather condition</br>
+![zipcode](/static/images/readme/sunny_condition.png)</br>
 
 Login with Spotify account </br>
 ![OAuth2](/static/images/readme/login.gif)</br>
