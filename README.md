@@ -5,7 +5,7 @@ MusicForecast provides users a tool to find Spotify playlists based on the weath
 * [Tech Stack](#technologies)
 * [Features](#features)
 * [Installation](#install)
-* [Version 2.0] (#version)
+* [Version 2.0](#version)
 * [About Me](#aboutme)
 
 
@@ -74,7 +74,10 @@ python server.py
 You can now navigate to 'localhost:5000/' to access MusicForecast.
 
 ## <a name="version"></a>Version 2.0
+* Infinite scrolling
+* Allow users to create playlists
+* Create algorithm to suggest playlists to follow
 
 ## <a name="aboutme"></a>About Me
 Violet Yeh is a Software Engineer in the Bay Area.
-Learn more about her on [LinkedIn](http://www.linkedin.com/in/violetsyeh).
+Learn more about Violet on [LinkedIn](http://www.linkedin.com/in/violetsyeh).
