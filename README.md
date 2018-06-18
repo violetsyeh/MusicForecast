@@ -18,7 +18,7 @@ APIs: AccuWeather, Spotify<br/>
 
 ## <a name="install"></a>Installation
 
-To run Ride Thrift:
+To run MusicForecast:
 
 Install PostgreSQL (Mac OSX)
 
