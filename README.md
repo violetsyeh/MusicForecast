@@ -36,7 +36,7 @@ Clone or fork this repo:
 https://github.com/violetsyeh/MusicForecast
 ```
 
-Create and activate a virtual environment inside your Ride Thrift directory:
+Create and activate a virtual environment inside your MusicForecast directory:
 
 ```
 virtualenv env
