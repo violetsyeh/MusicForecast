@@ -16,7 +16,7 @@ APIs: AccuWeather, Spotify<br/>
 
 ## <a name="features"></a>Features
 Follow playlists populated through zipcode or weather condition dropdown</br>
-![zipcode](/static/images/readme/weather_condition.gif)</br>
+![zipcode](/static/images/readme/WeatherCondition.gif)</br>
 
 Login with Spotify account </br>
 ![OAuth2](/static/images/readme/MusicForecastLogin.gif)</br>
