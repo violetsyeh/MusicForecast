@@ -19,7 +19,7 @@ Follow playlists populated through zipcode or weather condition dropdown</br>
 ![zipcode](/static/images/readme/weather_condition.gif)</br>
 
 Login with Spotify account </br>
-![OAuth2](/static/images/readme/login.gif)</br>
+![OAuth2](/static/images/readme/MusicForecastLogin.gif)</br>
 
 View currently followed playlists</br>
 ![currently_followed](static/images/readme/currently_followed.png)
