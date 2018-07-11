@@ -32,6 +32,8 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """User login"""
+
     token_info = sp_oauth.get_cached_token()
     # if token_info:
     #     # flash('You are already logged in')
@@ -39,7 +41,6 @@ def login():
     #     return redirect('/show-featured-playlists')
     # else:
     access_token = get_sp_access_token()
-    print access_token
     if access_token:
         add_user_to_session(access_token)
         flash('You have sucessfully logged in.')
@@ -50,6 +51,7 @@ def login():
 
 @app.route('/logout')
 def logout():
+    """Log out user"""
 
     session.clear()
     return redirect('/')
@@ -121,6 +123,8 @@ def display_rainy_playlists():
 
 @app.route('/show-featured-playlists', methods=['GET'])
 def show_featured_playlists():
+    """Display featured Spotify playlists"""
+
     spotify = authenticate_spotify()
     limit = 9
     results = spotify.featured_playlists(locale=None, country=None, timestamp=None, limit=limit, offset=0)
@@ -138,19 +142,19 @@ def show_featured_playlists():
 
 @app.route('/follow-playlist/', methods=['GET','POST'])
 def follow_playlist():
+    """Follow specific Spotify playlist"""
+
     access_token = get_sp_access_token()
     sp = spotipy.Spotify(auth=access_token)
-
+    
     playlist_owner_id = request.form.get("playlist_owner_id")
-    # print playlist_owner_id
-    # print 'playlist_owner_id form'
     playlist_id = request.form.get("playlist_id")
-    # print playlist_id
-    # print 'playlist_id form'
+    
     user = sp.current_user()
     user_id = user['id']
+    
     response = sp.user_playlist_is_following(playlist_owner_id=playlist_owner_id, playlist_id=playlist_id, user_ids=[user_id])
-    # print response
+    
     if response == [True]:
         flash('You are already following that playlist.')
         redirect('/current-followed-playlists')
@@ -161,15 +165,18 @@ def follow_playlist():
 
 @app.route('/current-followed-playlists', methods=['GET'])
 def show_followed_playlists():
+    """Display the playlists the user follows"""
+
     access_token = get_sp_access_token()
     sp = spotipy.Spotify(auth=access_token)
+    
     user = sp.current_user()
     user_id = user['id']
+    
     limit = 20
     results = sp.user_playlists(user=user_id, limit=limit, offset=0)
     playlist_len = results['total']
-    # print playlist_len
-    # print '=============='
+
     if results:
         playlists = []
         i = 0
@@ -183,12 +190,11 @@ def show_followed_playlists():
 
 @app.route('/refresh-token')
 def refresh():
+    """Refresh OAuth2 access token"""
+
     token_info = sp_oauth.get_cached_token()
-    # access_token = get_sp_access_token()
-    # print access_token
-    # print '=============0---------------'
-    # # sp = spotipy.Spotify(auth=access_token)
     expired_result = is_token_expired(token_info)
+
     if expired_result:
         token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
         print token_info
@@ -197,10 +203,12 @@ def refresh():
         # sp = spotipy.Spotify(auth=token)
         return token
     return 'token still valid'
+
 ##################################################################################################
 """Helper functions"""
 
 def lookup_zipcode_key():
+    """Search for location key in AccuWeather API"""
 
     zipcode = request.args.get("zipcode")
 
@@ -238,9 +246,10 @@ def authenticate_spotify():
     return spotify
 
 def get_sp_access_token():
+    """Obtain spotify access token for API requests"""
+
     access_token = ""
     token_info = sp_oauth.get_cached_token()
-    # print token_info
 
     if token_info:
         access_token = token_info['access_token']
@@ -262,10 +271,14 @@ def get_sp_access_token():
             return access_token
 
 def is_token_expired(token_info):
+    """Timer for Spotify OAuth2 access token"""
+
     now = int(time.time())
     return token_info['expires_at'] - now < 60
 
 def add_user_to_session(access_token):
+    """Adding user to session"""
+
     sp = spotipy.Spotify(access_token)
     user = sp.current_user()
     spotify_user_id = user['id']
